@@ -52,8 +52,6 @@ class AnimalDatasetEvolution:
         return self.state
 
 
-import numpy as np
-
 def compute_balanced_transition_matrix(target_keep_ratio=0.95, tolerance=1e-6):
     # States: KEEP (0), INSERT (1), REMOVE (2)
     # We want π = [π_k, π_i, π_r] with π_k ≈ target_keep_ratio
@@ -185,8 +183,6 @@ if __name__ == "__main__":
     for t in range(T):
         state = sim.step()
         states.append(state)
-
-
 
     # Map states to numeric values
     state_map = {'KEEP': 0, 'INSERT': 1, 'REMOVE': 2}
