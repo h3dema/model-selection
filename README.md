@@ -1,5 +1,8 @@
 # model-selection
 
+The code in this repository is used to generate synthetic models and datasets to simulate model selection scenarios.
+
+
 ## Install requirements
 
 ```
