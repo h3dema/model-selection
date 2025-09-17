@@ -1,6 +1,14 @@
 import random
 
+
 class AnimalAppearance:
+    """
+        Simulates the appearance of an animal over time using a Markov process.
+        States: 'APPEAR', 'NOSHOW'
+
+    """
+
+
     def __init__(self, p_aa, p_an, p_na, p_nn, seed=None):
         if seed is not None:
             random.seed(seed)
@@ -39,7 +47,7 @@ if __name__ == "__main__":
     T = 24 * 60 * 60  # simulate for one day (in seconds)
 
     # Example usage
-    simulator = AnimalAppearanceSimulator(p_aa=p_aa, p_an=p_an, p_na=p_na, p_nn=p_nn, seed=42)
+    simulator = AnimalAppearance(p_aa=p_aa, p_an=p_an, p_na=p_na, p_nn=p_nn, seed=42)
 
     states = simulator.simulate(T)
     num_appear = sum(1 for state in states if state == 'APPEAR') / len(states) # Count the number of APPEAR states.
