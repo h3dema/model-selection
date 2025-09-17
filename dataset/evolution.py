@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class AnimalDatasetEvolution:
+class DatasetEvolution:
     def __init__(self, transition_probs, initial_state='KEEP', seed=None):
         """
         transition_probs: dict with keys like 'kk', 'ki', 'kr', 'ik', ..., 'rr'
@@ -50,6 +50,12 @@ class AnimalDatasetEvolution:
         )[0]
         self.state = next_state
         return self.state
+
+    def simulate(self, T):
+        states = []
+        for _ in range(T):
+            states.append(self.step())
+        return states
 
 
 def compute_balanced_transition_matrix(target_keep_ratio=0.95, tolerance=1e-6):
@@ -176,7 +182,7 @@ if __name__ == "__main__":
 
     transition_probs = flatten_transition_matrix(matrix)
 
-    sim = AnimalDatasetEvolution(transition_probs, initial_state='KEEP', seed=123)
+    sim = DatasetEvolution(transition_probs, initial_state='KEEP', seed=123)
 
     # Simulate for T steps
     states = []
