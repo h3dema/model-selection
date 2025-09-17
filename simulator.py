@@ -12,8 +12,8 @@ if __name__ == "__main__":
     # parameters
 
     # --- Dataset parameters ---
-    N = 1000  # number of samples
-    num_classes = 5  # number of classes
+    N = 10000  # number of samples
+    num_classes = 10  # number of classes
     subset_sizes = [100]  # size of subsets
 
     # --- Model parameters ---
