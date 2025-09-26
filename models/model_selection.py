@@ -183,33 +183,50 @@ def memory_availability_rule(model, i, t, m):
 
 model.MemoryAvailability = pyo.Constraint(model.I, model.T, model.M, rule=memory_availability_rule)
 
+# Load model m on device i
+# Note: the model is loaded at time t-1 and can be used for prediction at time t
 
 # Equ (42)
 def load_rule_1(model, i, t, m):
-    return model.lm[i, m, t] >= model.im[i, m, t] - model.im[i, m, t-1]
+    if t <= 1:
+        return pyo.Constraint.Skip
+
+    return model.lm[i, m, t-1] >= model.im[i, m, t] - model.im[i, m, t-1]
 
 model.LoadRule1 = pyo.Constraint(model.I, model.T, model.M, rule=load_rule_1)
 
 
 # Equ (43)
 def load_rule_2(model, i, t, m):
-    return model.lm[i, m, t] <= model.im[i, m, t]
+    if t <= 1:
+        return pyo.Constraint.Skip
+    return model.lm[i, m, t-1] <= model.im[i, m, t]
 
 model.LoadRule2 = pyo.Constraint(model.I, model.T, model.M, rule=load_rule_2)
 
 # Equ (44)
 def load_rule_3(model, i, t, m):
-    return model.lm[i, m, t] <= 1 - model.im[i, m, t-1]
+    if t <= 1:
+        return pyo.Constraint.Skip
+    return model.lm[i, m, t-1] <= 1 - model.im[i, m, t-1]
 
 model.LoadRule3 = pyo.Constraint(model.I, model.T, model.M, rule=load_rule_3)
 
-# Equ (46)
+# Equ (45)
+def load_no_rep_rule(model, i, t, m):
+    if t <= 1:
+        return pyo.Constraint.Skip
+    return model.lm[i, m, t] + model.lm[i, m, t-1] <= 1
+
+model.LoadRuleNoRep = pyo.Constraint(model.I, model.T, model.M, rule=load_no_rep_rule)
+
+# Equ (47)
 def model_activation_gate(model, i, m, t):
     return model.rm[i, m, t] <= model.sp[i, t]
 
 model.ModelGate = pyo.Constraint(model.I, model.M, model.T, rule=model_activation_gate)
 
-# Equ (47)
+# Equ (49)
 def energy_to_run_rule(model, i, t):
     # NOTE: we assume that the energy needed to run the select model procedure is negligible for now
     #       because otherwise, we also need to check first if we have enough energy to run the select model procedure
@@ -221,13 +238,13 @@ model.EnergyToRun = pyo.Constraint(model.I, model.T, rule=energy_to_run_rule)
 
 
 # Energy update rule is more complex because there is a upper limit on the stored energy given by Emax
-# Equ (52)
+# Equ (53)
 def energy_limits_rule1(model, i, t):
     return model.E[i, t] <= model.Emax[i]
 
 model.EnergyLimits1 = pyo.Constraint(model.I, model.T, rule=energy_limits_rule1)
 
-# Equ (53)
+# Equ (54)
 def energy_limits_rule2(model, i, t):
     consumed_energy = model.sp[i, t] * model.Esel[i] + sum(model.Eim[i, m] * model.rm[i, m, t] for m in model.M)
     available_energy = model.E[i, t-1] + model.Eh[i, t]
@@ -235,7 +252,7 @@ def energy_limits_rule2(model, i, t):
 
 model.EnergyLimits2 = pyo.Constraint(model.I, model.T, rule=energy_limits_rule2)
 
-# Equ (54)
+# Equ (55)
 def energy_limits_rule3(model, i, t):
     consumed_energy = model.sp[i, t] * model.Esel[i] + sum(model.Eim[i, m] * model.rm[i, m, t] for m in model.M)
     available_energy = model.E[i, t-1] + model.Eh[i, t]
@@ -243,7 +260,7 @@ def energy_limits_rule3(model, i, t):
 
 model.EnergyLimits3 = pyo.Constraint(model.I, model.T, rule=energy_limits_rule3)
 
-# Equ (55)
+# Equ (56)
 def energy_limits_rule4(model, i, t):
     return model.E[i, t] >= model.Emax[i] - (1 - model.xi[i, t]) * model.Emax[i]
 
@@ -269,10 +286,6 @@ def objective_rule(model):
     return term1 + term2 - term3
 
 model.Objective = pyo.Objective(rule=objective_rule, sense=pyo.maximize)
-
-
-exit(0)  # still need to figure out some constraints to run the model
-
 
 # Solver (make sure you have glpk or cbc installed)
 solver = pyo.SolverFactory("glpk")
